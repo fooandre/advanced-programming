@@ -1,9 +1,8 @@
-﻿//Use "Environment.Exit(0);" if you want to implement an exit of the console program
-//Start your assignment 1 requirements below.
-
-void Run()
+﻿void Run()
 {
+    Console.Clear();
     MenuService menu = new();
+    // menu.Run();
     while (true) menu.Display();
 }
 

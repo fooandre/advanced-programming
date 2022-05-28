@@ -5,34 +5,93 @@ using System.Linq;
 public class PokemonService
 {
     public static PokemonService Instance { get; } = new();
-    public List<Pokemon> Pokemons { get; private set; } = new() {
-        new Pikachu { Hp = 45, Exp = 22 },
-        new Eevee { Hp = 54, Exp = 34 },
-        new Charmander { Hp = 34, Exp = 21 },
-    };
-    //PokemonMaster list for checking pokemon evolution availability.    
-    Dictionary<string, PokemonMaster> pokemonMasters = new() {
-        { "Pikachu", new PokemonMaster { Name = "Pikachu", NoToEvolve = 2, EvolveTo = "Raichu" } },
-        { "Eevee", new PokemonMaster { Name = "Eevee", NoToEvolve = 3, EvolveTo = "Flareon" } },
-        { "Charmander", new PokemonMaster { Name = "Charmander", NoToEvolve = 1, EvolveTo = "Charmeleon" } },
+    private List<PokemonMaster> _PokemonMasters { get; } = new() {
+        new PokemonMaster { Name = "Pichu", NoToEvolve = 1, EvolveTo = "Pikachu" },
+        new PokemonMaster { Name = "Pikachu", NoToEvolve = 2, EvolveTo = "Raichu" },
+        new PokemonMaster { Name = "Eevee", NoToEvolve = 3, EvolveTo = "Flareon" },
+        new PokemonMaster { Name = "Charmander", NoToEvolve = 1, EvolveTo = "Charmeleon" },
+        new PokemonMaster { Name = "Charmeleon", NoToEvolve = 2, EvolveTo = "Charizard" },
     };
 
-    public List<string> ValidPokemons { get; private set; } = new() { "pikachu", "eevee", "charmander" };
+    public List<Pokemon> GetPokemons() { using (PokemonContext dbctx = new()) return dbctx.Pokemons.OrderBy(p => p.Id).ToList(); }
 
     public Boolean AddPokemon(Pokemon pokemon)
     {
         try
         {
-            string name = pokemon.Name;
-            name = name.Substring(0, 1).ToUpper() + name.Substring(1).ToLower();
-            pokemon.Name = name;
+            using (PokemonContext dbctx = new())
+            {
+                int pokemonCount = GetPokemons().Count();
+                pokemon.Id = pokemonCount == 0 ? 1 : GetPokemons().LastOrDefault()!.Id + 1;
 
-            Pokemons.Add(pokemon);
-            return true;
+                string name = pokemon.Name;
+                name = name.Substring(0, 1).ToUpper() + name.Substring(1).ToLower();
+                pokemon.Name = name;
+
+                dbctx.Pokemons.Add(pokemon);
+                dbctx.SaveChanges();
+                return true;
+            }
         }
-        catch (System.Exception)
+        catch (Exception)
         {
             return false;
+        }
+    }
+
+    public Boolean ReplacePokemon(int id, Pokemon pokemon)
+    {
+        using (PokemonContext dbctx = new())
+        {
+            try
+            {
+                var toReplace = dbctx.Pokemons.FirstOrDefault(p => p.Id == id)!;
+                toReplace.Name = pokemon.Name;
+                toReplace.Hp = pokemon.Hp;
+                toReplace.Exp = pokemon.Exp;
+                toReplace.Skill = pokemon.Skill;
+                dbctx.SaveChanges();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+    }
+
+    public Boolean EditPokemon(int id, string attribute, dynamic newValue)
+    {
+        using (PokemonContext dbctx = new())
+        {
+            try
+            {
+                var toEdit = dbctx.Pokemons.FirstOrDefault(p => p.Id == id)!;
+
+                switch (attribute.Trim().ToLower())
+                {
+                    case "name":
+                        toEdit.Name = newValue;
+                        break;
+                    case "hp":
+                        toEdit.Hp = newValue;
+                        break;
+                    case "Exp":
+                        toEdit.Exp = newValue;
+                        break;
+                    default:
+                        Console.WriteLine($"{attribute} is not a valid attribute");
+                        return false;
+                }
+
+                dbctx.SaveChanges();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return false;
+            }
         }
     }
 
@@ -40,33 +99,38 @@ public class PokemonService
     {
         try
         {
-            Pokemons.Remove(pokemon);
-            return true;
+            using (PokemonContext dbctx = new())
+            {
+                dbctx.Pokemons.Remove(pokemon);
+                dbctx.SaveChanges();
+                return true;
+            }
         }
-        catch (System.Exception)
+        catch (Exception)
         {
             return false;
         }
     }
 
-    public List<Pokemon> ToEvolve()
+    public Dictionary<Boolean, List<PokemonMaster>> CheckToEvolve()
     {
-        List<Pokemon> res = new();
-        foreach (var pm in pokemonMasters)
+        var groupedByName = GetPokemons().GroupBy(p => p.Name).ToList();
+        List<PokemonMaster> canEvolve = new();
+        List<PokemonMaster> cannotEvolve = new();
+
+        foreach (var g in groupedByName)
         {
-            if (Pokemons.Where(p => p.Name.Equals(pm.Key)).Count() < pm.Value.NoToEvolve) continue;
+            PokemonMaster? pokemonMaster = _PokemonMasters.FirstOrDefault(pm => pm.Name.Equals(g.Key));
+            if (pokemonMaster == null) continue;
 
-            var toAdd = pm.Key switch
-            {
-                "Pikachu" => new Pikachu(),
-                "Eevee" => new Eevee(),
-                "Charmander" => new Charmander(),
-                _ => new Pokemon("Invalid")
-            };
-
-            res.Add(toAdd);
+            List<PokemonMaster> addTo = g.Count() < pokemonMaster.NoToEvolve ? cannotEvolve : canEvolve;
+            addTo.Add(pokemonMaster);
         }
 
-        return res;
+        return new Dictionary<Boolean, List<PokemonMaster>>()
+        {
+            { true, canEvolve },
+            { false, cannotEvolve }
+        };
     }
 }

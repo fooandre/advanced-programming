@@ -6,16 +6,19 @@ public class MenuService
 {
     public static MenuService Instance { get; } = new();
     private static PokemonService _Service { get; } = PokemonService.Instance;
-    private List<Pokemon> _Pokemons { get; } = _Service == null ? new() : _Service.Pokemons;
     private Dictionary<string, Action> Functions { get; }
 
     public MenuService()
     {
         Functions = new() {
-            { "(1) Add pokemon to my pocket", () => AddPokemon() },
-            { "(2) List pokemon(s) in my pocket", () => ShowPokemons() },
-            { "(3) Check if I can evolve pokemon", () => Console.WriteLine("Option 3") },
-            { "(4) Evolve pokemon", () => Console.WriteLine("Option 4") },
+            { "(1) List pokemon(s) in my pocket", ListPokemons },
+            { "(2) Add pokemon to my pocket", AddPokemon },
+            { "(3) Remove pokemon from my pocket", RemovePokemon },
+            { "(4) Check if I can evolve pokemon", CheckToEvolve },
+            { "(5) Evolve pokemon", EvolvePokemons },
+            { "(6) Go to Hospital", Hospital },
+            { "(7) Go to the Gym", Gym },
+            { "(8) Go to the Trade Market", TradeMarket },
         };
     }
 
@@ -27,16 +30,16 @@ public class MenuService
         Console.WriteLine("*****************************");
         foreach (var item in Functions) Console.WriteLine(item.Key);
 
-        char input = GetInput("Please only enter [1,2,3,4] or Q to quit: ");
-        if (char.ToLower(input).Equals('q')) return;
+        char input = GetInput("Please only enter [1,2,3,4,5,6,7,8] or Q to quit:");
+        if (char.ToLower(input).Equals('q')) Environment.Exit(0);
         RunFunction((int)input - 48);
     }
 
-    public dynamic? GetInput(string question)
+    private dynamic? GetInput(string question)
     {
         try
         {
-            Console.Write($"{question.Substring(0, 1) + question.Substring(1)}: ");
+            Console.Write($"{question.Substring(0, 1) + question.Substring(1)} ");
             dynamic input = Console.ReadKey().KeyChar;
             Console.WriteLine();
             return input;
@@ -48,21 +51,40 @@ public class MenuService
         }
     }
 
-    public void RunFunction(int index)
+    private void RunFunction(int index)
     {
-        if (index >= 0 && index <= Functions.Count()) Functions.ElementAt(index - 1).Value();
-        Console.WriteLine("That is not one of the options, please try again or enter Q to quit.");
+        if (index >= 0 && index <= Functions.Count())
+        {
+            Console.WriteLine();
+            Functions.ElementAt(index - 1).Value();
+        }
+        else Console.WriteLine("That is not one of the options, please try again or enter Q to quit.");
     }
 
-    public void ShowPokemons()
+    private void ListPokemons()
     {
-        List<Pokemon> pokemons = _Service.Pokemons;
+        List<Pokemon> pokemons = _Service.GetPokemons();
+        if (pokemons.Count() == 0) goto Display;
 
-        char sortList = GetInput("Would you like the list to be sorted? (y/n): ");
+        GetSort:
+        char sortList = GetInput("Would you like the list to be sorted? (y/n)?");
         if (char.ToLower(sortList).Equals('n')) goto Display;
 
-        char sortAttr = GetInput("How would you like the list to be sorted by:\n(1) Name\n(2) Hp\n(3) Exp\nEnter a number: ");
+        if (!char.ToLower(sortList).Equals('y'))
+        {
+            Console.WriteLine("Please only enter \"y\" or \"n\".");
+            goto GetSort;
+        }
+
+    GetSortAttr:
+        char sortAttr = GetInput("\nHow would you like the list to be sorted by?\n(1) Name\n(2) Hp\n(3) Exp\nEnter a number:");
         if (char.ToLower(sortAttr).Equals('n')) goto Display;
+
+        if (!new List<int>() { '1', '2', '3', '4' }.Contains(char.ToLower(sortAttr)))
+        {
+            Console.WriteLine("Please only enter [1, 2, 3, 4].");
+            goto GetSortAttr;
+        }
 
         pokemons = (sortAttr) switch
         {
@@ -73,81 +95,522 @@ public class MenuService
         };
 
     Display:
-        Console.WriteLine("\n=== Pokemons in Pocket ===");
-        if (_Pokemons.Count() == 0) Console.WriteLine("Pocket is currently empty, add a pokemon to see it!");
+        Console.WriteLine("\n=== Pokemons in Pocket ===\n");
+        if (pokemons.Count() == 0) Console.WriteLine("Pocket is currently empty, add a pokemon to see it!");
         else foreach (Pokemon pokemon in pokemons) Console.WriteLine(pokemon.ToString());
+        Console.WriteLine("\n=== End of List ===\n");
     }
 
     private void AddPokemon()
     {
-        Pokemon? toAdd = null;
+    GetName:
+        Console.Write("Enter Pokemon's Name: ");
+        string? name = Console.ReadLine();
+
+        if (string.IsNullOrEmpty(name))
+        {
+            Console.WriteLine("Name cannot be empty.\nTry again, or enter \"cancel\" to cancel.\n");
+            goto GetName;
+        }
+
+        name = (name.Substring(0, 1).ToUpper() + name.Substring(1).ToLower()).Trim();
+        if (name.Equals("Cancel")) return;
+
+        Type? pokemonClass = Type.GetType(name);
+
+        if (pokemonClass == null)
+        {
+            Console.WriteLine("Invalid pokemon name.\nTry again, or enter \"cancel\" to cancel.\n");
+            goto GetName;
+        }
+
+        Pokemon toAdd = (Pokemon)Activator.CreateInstance(pokemonClass)!;
+
+    GetHp:
+        Console.Write("Enter Pokemon's HP: ");
+        string? hp = Console.ReadLine();
+
+        if (string.IsNullOrEmpty(hp))
+        {
+            Console.WriteLine("Hp cannot be empty.\nTry again, or enter \"cancel\" to cancel.\n");
+            goto GetHp;
+        }
+
+        if (hp.Trim().ToLower().Equals("cancel")) return;
+
+        if (!int.TryParse(hp, out int intHp))
+        {
+            Console.WriteLine("Hp must be a valid number.\nTry again, or enter 0 to cancel.\n");
+            goto GetHp;
+        }
+
+        toAdd.Hp = intHp;
+
+    GetExp:
+        Console.Write("Enter Pokemon's Exp: ");
+        string? exp = Console.ReadLine();
+
+        if (string.IsNullOrEmpty(exp))
+        {
+            Console.WriteLine("Name cannot be empty.\nTry again, or enter \"cancel\" to cancel.\n");
+            goto GetExp;
+        }
+
+        if (exp.Trim().ToLower().Equals("cancel")) return;
+
+        if (!int.TryParse(exp, out int intExp))
+        {
+            Console.WriteLine("Exp must be a valid number.\nTry again, or enter 0 to cancel.\n");
+            goto GetExp;
+        }
+
+        toAdd.Exp = intExp;
+
+        if (_Service.AddPokemon(toAdd)) Console.WriteLine($"{toAdd.Name} added successfully!\n");
+        else
+        {
+            Console.WriteLine("Something went wrong, please try again.\n");
+            goto GetName;
+        }
+
+    Display:
+        char showList = GetInput("Display updated pokemons in pocket?")!;
+
+        switch (char.ToLower(showList))
+        {
+            case 'y':
+                Console.WriteLine();
+                ListPokemons();
+                break;
+            case 'n':
+                break;
+            default:
+                Console.WriteLine("Please only enter \"y\" or \"n\".");
+                goto Display;
+        }
+    }
+
+    private void RemovePokemon()
+    {
+        List<Pokemon> pokemons = _Service.GetPokemons();
+        int removed = 0;
+
+        foreach (var pokemon in pokemons) Console.WriteLine($"({pokemons.ToList().IndexOf(pokemon) + 1})\n{pokemon.ToString()}\n");
+        foreach (var pokemon in pokemons)
+        {
+            char input = GetInput("Choose pokemon to remove or enter \"q\" to exit:");
+            if (char.ToLower(input).Equals('q')) break;
+
+            int index = (int)input - (48 + 1);
+            Pokemon toRemove = pokemons.ElementAt(index);
+            _Service.RemovePokemon(toRemove);
+            removed++;
+
+            Console.WriteLine($"{pokemon.Name} removed successfully!\n");
+        }
+
+    Display:
+        if (_Service.GetPokemons().Count() == 0)
+        {
+            Console.WriteLine("No pokemons in pocket to remove");
+            return;
+        }
+
+        char showList = GetInput($"{removed} pokemons removed\nDisplay updated pokemons in pocket?")!;
+
+        switch (char.ToLower(showList))
+        {
+            case 'y':
+                Console.WriteLine();
+                ListPokemons();
+                break;
+            case 'n':
+                break;
+            default:
+                Console.WriteLine("Please only enter \"y\" or \"n\".");
+                goto Display;
+        }
+    }
+
+    private void CheckToEvolve()
+    {
+        Dictionary<Boolean, List<PokemonMaster>> toEvolve = _Service.CheckToEvolve();
+
+        if (toEvolve[true].Count == 0 && toEvolve[false].Count == 0)
+        {
+            Console.WriteLine("No pokemon to evolve, collect more first!");
+            return;
+        }
+
+        foreach (var pokemon in toEvolve[true]) Console.WriteLine($"{pokemon.Name} --> {pokemon.EvolveTo}");
+        foreach (var pokemon in toEvolve[false])
+        {
+            var group = _Service.GetPokemons().Where(p => p.Name.Equals(pokemon.Name));
+            Console.WriteLine($"{pokemon.NoToEvolve - group.Count()} more {pokemon.Name} needed to evolve to {pokemon.EvolveTo}");
+        }
+    }
+
+    private void EvolvePokemons()
+    {
+        List<PokemonMaster> canEvolve = _Service.CheckToEvolve()[true];
+
+        if (canEvolve.Count() == 0)
+        {
+            Console.WriteLine("No pokemon to evolve, collect more first!");
+            return;
+        }
+
+        foreach (var toEvolve in canEvolve)
+        {
+            List<Pokemon> toRemove = new();
+
+            Console.WriteLine($"{toEvolve.Name} --> {toEvolve.EvolveTo}\n");
+
+            IGrouping<string, Pokemon> group = _Service.GetPokemons().GroupBy(p => p.Name).ToList().Find(g => g.Key.Equals(toEvolve.Name))!;
+
+            if (group.Count() == toEvolve.NoToEvolve)
+            {
+                group.ToList().ForEach(p => toRemove.Add(p));
+                goto UpdateDB;
+            }
+
+            foreach (var pokemon in group) Console.WriteLine($"({group.ToList().IndexOf(pokemon) + 1})\n{pokemon.ToString()}\n");
+
+            while (toRemove.Count() < toEvolve.NoToEvolve)
+            {
+                int index = toRemove.Count() + 1;
+                string ordinalIndicator = index == 1 ? "st" : index == 2 ? "nd" : "rd";
+
+                dynamic input = (char)GetInput($"Choose the {index}{ordinalIndicator} {toEvolve.Name} to evolve:");
+                if (char.ToLower(input).Equals('q')) return;
+                input = (int)input - (48 + 1);
+
+                if (input < 0 || input >= group.Count())
+                {
+                    Console.WriteLine("That is not one of the options, please select again or enter Q to quit.");
+                    continue;
+                }
+
+                Pokemon pokemon = group.ElementAt((int)input);
+
+                if (toRemove.Contains(pokemon))
+                {
+                    Console.WriteLine("Pokemon already selected, select another or enter Q to quit.");
+                    continue;
+                }
+
+                toRemove.Add(group.ElementAt((int)input));
+            }
+
+        UpdateDB:
+            toRemove.ForEach(pokemon => _Service.RemovePokemon(pokemon));
+
+            Type pokemonClass = Type.GetType(toEvolve.EvolveTo)!;
+            Pokemon instance = (Pokemon)Activator.CreateInstance(pokemonClass)!;
+            _Service.AddPokemon(instance);
+
+        }
+
+    Display:
+        char showList = GetInput("Display updated pokemons in pocket?")!;
+
+        switch (char.ToLower(showList))
+        {
+            case 'y':
+                Console.WriteLine();
+                ListPokemons();
+                break;
+            case 'n':
+                break;
+            default:
+                Console.WriteLine("Please only enter \"y\" or \"n\".");
+                goto Display;
+        }
+    }
+
+    // TODO: Hospital()
+    private void Hospital()
+    {
+        Console.Clear();
+
+        void NursePokemons()
+        {
+            List<Pokemon> toNurseList = new();
+
+        GetToNurse:
+            List<Pokemon> pokemons = _Service.GetPokemons();
+            foreach (var pokemon in pokemons) Console.WriteLine($"({pokemons.IndexOf(pokemon) + 1})\n{pokemon.ToString()}\n");
+
+            dynamic toNurse = (char)GetInput($"Choose pokemon to trade with:");
+            if (char.ToLower(toNurse).Equals('q')) return;
+            toNurse = (int)toNurse - (48 + 1);
+
+            if (toNurse < 0 || toNurse >= pokemons.Count())
+            {
+                Console.WriteLine("That is not one of the options, please select again or enter Q to quit.\n");
+                goto GetToNurse;
+            }
+
+            toNurse = pokemons.ElementAt((int)toNurse);
+            Console.WriteLine($"{toNurse.Name} selected\n");
+
+            if (toNurseList.Count() == pokemons.Count())
+            {
+                Console.WriteLine("All pokemons in pocket selected!");
+                goto NursePokemons;
+            }
+
+        GetContinueChoosing:
+            char continueChoosing = GetInput("\nContinue trading?")!;
+
+            switch (char.ToLower(continueChoosing))
+            {
+                case 'y':
+                    Console.WriteLine();
+                    goto GetToNurse;
+                case 'n':
+                    Console.WriteLine();
+                    break;
+                default:
+                    Console.WriteLine("Please only enter \"y\" or \"n\".\n");
+                    goto GetContinueChoosing;
+            }
+
+        NursePokemons:
+            Random random = new();
+            while (true) foreach (var pokemon in toNurseList)
+                {
+                    Console.WriteLine(pokemon.Name);
+                }
+        }
 
         while (true)
         {
-            if (toAdd != null) goto NameEntered;
+            Console.WriteLine();
+            Console.WriteLine("***********************");
+            Console.WriteLine("Welcome to the Hospital");
+            Console.WriteLine("***********************");
+            Console.WriteLine("(1) List pokemons in my pocket");
+            Console.WriteLine("(2) Nurse selected pokemon(s)");
+            Console.WriteLine("(3) Exit market");
 
-            Console.Write("Enter Pokemon's Name: ");
-            string? name = Console.ReadLine();
+            dynamic input = (char)GetInput("Please only enter [1,2,3] or Q to quit:")!;
 
-            if (string.IsNullOrEmpty(name))
+            if (char.ToLower(input).Equals('q'))
             {
-                Console.WriteLine("Name cannot be empty.\nTry again, or enter 0 to cancel.\n");
-                continue;
+                Console.Clear();
+                return;
             }
 
-            if (name.Contains("cancel")) break;
-
-            name = name.ToLower();
-
-            if (!_Service.ValidPokemons.Contains(name))
+            input = (int)input - 48;
+            switch (input)
             {
-                Console.WriteLine("Invalid pokemon name.\nTry again, or enter 0 to cancel.\n");
-                continue;
+                case 1:
+                    Console.WriteLine();
+                    ListPokemons();
+                    break;
+                case 2:
+                    Console.WriteLine();
+                    NursePokemons();
+                    break;
+                case 3:
+                    Console.Clear();
+                    return;
+                default:
+                    Console.WriteLine("\nThat is not one of the options, please try again or enter Q to quit.");
+                    break;
+            }
+        }
+    }
+
+    // TODO: Gym()
+    private void Gym()
+    {
+        throw new NotImplementedException("OOI STUPID");
+    }
+
+    enum Trade
+    {
+        Pichu,
+        Pikachu,
+        Raichu,
+        Eevee,
+        Flareon,
+        Charmander,
+        Charmeleon,
+        Charizard
+    }
+    private void TradeMarket()
+    {
+        Console.Clear();
+
+        Random random = new();
+        List<Pokemon> trades;
+
+        void RefreshTrades()
+        {
+            trades = new();
+            while (true)
+            {
+                int randomNum = random.Next(8);
+
+                Type pokemonClass = Type.GetType(Enum.GetName(typeof(Trade), randomNum)!)!;
+                Pokemon newTrade = (Pokemon)Activator.CreateInstance(pokemonClass)!;
+                newTrade.Hp = random.Next(200);
+                newTrade.Exp = random.Next(200);
+
+                trades.Add(newTrade);
+
+                if (trades.Count() == 4) break;
+            }
+        }
+
+        void DisplayTrades()
+        {
+            Console.WriteLine("=== Trade Market ===");
+            foreach (var trade in trades) Console.WriteLine(trade.ToString());
+        }
+
+        void TradeSession()
+        {
+        GetTradeFor:
+            foreach (var trade in trades) Console.WriteLine($"({trades.IndexOf(trade) + 1})\n{trade.ToString()}\n");
+            dynamic tradeFor = (char)GetInput($"Choose pokemon to trade for:");
+            if (char.ToLower(tradeFor).Equals('q')) return;
+            tradeFor = (int)tradeFor - (48 + 1);
+
+            if (tradeFor < 0 || tradeFor >= trades.Count())
+            {
+                Console.WriteLine("That is not one of the options, please select again or enter Q to quit.\n");
+                goto GetTradeFor;
             }
 
-            toAdd = name switch
+            tradeFor = trades.ElementAt((int)tradeFor);
+            Console.WriteLine($"{tradeFor.Name} selected\n");
+
+        GetTradeWith:
+            List<Pokemon> pokemons = _Service.GetPokemons();
+            foreach (var pokemon in pokemons) Console.WriteLine($"({pokemons.IndexOf(pokemon) + 1})\n{pokemon.ToString()}\n");
+
+            dynamic tradeWith = (char)GetInput($"Choose pokemon to trade with:");
+            if (char.ToLower(tradeWith).Equals('q')) return;
+            tradeWith = (int)tradeWith - (48 + 1);
+
+            if (tradeWith < 0 || tradeWith >= pokemons.Count())
             {
-                "pikachu" => new Pikachu(),
-                "eevee" => new Eevee(),
-                "charmander" => new Charmander(),
-                _ => new Pokemon("invalid")
-            };
-
-        NameEntered:
-            if (toAdd.Hp != 0) goto HpEntered;
-
-            Console.Write("Enter Pokemon's HP: ");
-            string? hp = Console.ReadLine();
-
-            if (hp!.Equals("cancel")) break;
-
-            if (!int.TryParse(hp, out int intHp))
-            {
-                Console.WriteLine("Hp must be a valid number.\nTry again, or enter 0 to cancel.\n");
-                continue;
+                Console.WriteLine("That is not one of the options, please select again or enter Q to quit.\n");
+                goto GetTradeWith;
             }
 
-            toAdd.Hp = intHp;
+            tradeWith = pokemons.ElementAt((int)tradeWith);
+            Console.WriteLine($"{tradeWith.Name} selected\n");
 
-        HpEntered:
-            Console.Write("Enter Pokemon's Exp: ");
-            string? exp = Console.ReadLine();
-
-            if (exp!.Equals("cancel")) break;
-
-            if (!int.TryParse(exp, out int intExp))
+            if (!_Service.ReplacePokemon(tradeWith.Id, tradeFor))
             {
-                Console.WriteLine("Exp must be a valid number.\nTry again, or enter 0 to cancel.\n");
-                continue;
+                Console.WriteLine("Something went wrong, please try again");
+                goto GetTradeFor;
+            }
+            else
+            {
+                trades[trades.IndexOf(tradeFor)] = tradeWith;
+                Console.WriteLine($"{tradeWith.Name} traded for {tradeFor.Name}");
             }
 
-            toAdd.Exp = intExp;
+        GetContinueTrading:
+            char continueTrading = GetInput("\nContinue trading?")!;
 
-            if (!_Service.AddPokemon(toAdd)) Console.WriteLine("Something went wrong, please try again.\n");
-            else Console.WriteLine($"{toAdd.Name} added successfully!\n");
+            switch (char.ToLower(continueTrading))
+            {
+                case 'y':
+                    Console.WriteLine();
+                    goto GetTradeFor;
+                case 'n':
+                    Console.WriteLine();
+                    break;
+                default:
+                    Console.WriteLine("Please only enter \"y\" or \"n\".\n");
+                    goto GetContinueTrading;
+            }
 
-            ShowPokemons();
-            break;
+        Display:
+            char showList = GetInput("Display updated pokemons in pocket?")!;
+
+            switch (char.ToLower(showList))
+            {
+                case 'y':
+                    Console.WriteLine();
+                    ListPokemons();
+                    break;
+                case 'n':
+                    Console.WriteLine();
+                    break;
+                default:
+                    Console.WriteLine("Please only enter \"y\" or \"n\".\n");
+                    goto Display;
+            }
+        }
+
+        RefreshTrades();
+        while (true)
+        {
+            Console.WriteLine();
+            Console.WriteLine("***************************");
+            Console.WriteLine("Welcome to the Trade Market");
+            Console.WriteLine("***************************");
+            Console.WriteLine("(1) Display trades");
+            Console.WriteLine("(2) Refresh trades");
+            Console.WriteLine("(3) List pokemons in my pocket");
+            Console.WriteLine("(4) Start trade session");
+            Console.WriteLine("(5) Exit market");
+
+            dynamic input = (char)GetInput("Please only enter [1,2,3,4,5] or Q to quit:")!;
+
+            if (char.ToLower(input).Equals('q'))
+            {
+                Console.Clear();
+                return;
+            }
+
+            input = (int)input - 48;
+            switch (input)
+            {
+                case 1:
+                    Console.WriteLine();
+                    DisplayTrades();
+                    break;
+                case 2:
+                    Console.WriteLine();
+                    RefreshTrades();
+                    DisplayTrades();
+                    break;
+                case 3:
+                    Console.WriteLine();
+                    ListPokemons();
+                    break;
+                case 4:
+                    if (_Service.GetPokemons().Count() == 0)
+                    {
+                        Console.WriteLine("\nNo pokemons to trade with");
+                        break;
+                    }
+                    else if (trades.Count > 0)
+                    {
+                        Console.WriteLine();
+                        TradeSession();
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nNo more pokemons in trade market");
+                        break;
+                    }
+                case 5:
+                    Console.Clear();
+                    return;
+                default:
+                    Console.WriteLine("\nThat is not one of the options, please try again or enter Q to quit.");
+                    break;
+            }
         }
     }
 }
