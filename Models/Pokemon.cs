@@ -28,7 +28,7 @@ public class Pokemon
     public string Skill { get; internal set; }
     public Pokemon() : base() => Skill = string.Empty;
 
-    public new string ToString() => $"-----------------------\nName: {Name}\nHP: {Hp:0.00}\nExp: {Exp}\nSkill: {Skill}\n-----------------------";
+    public new string ToString() => $"-----------------------\nName: {Name}\nHP: {Hp:0.00}\nExp: {Exp:0.00}\nSkill: {Skill}\n-----------------------";
 }
 
 class Pichu : Pokemon

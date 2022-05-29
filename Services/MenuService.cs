@@ -208,23 +208,40 @@ public class MenuService
     private void RemovePokemon()
     {
         List<Pokemon> pokemons = _Service.GetPokemons();
+
+        if (pokemons.Count() == 0)
+        {
+            Console.WriteLine("No pokemons in pocket to remove, collect more first!");
+            return;
+        }
+
         int removed = 0;
 
         foreach (var pokemon in pokemons) Console.WriteLine($"({pokemons.ToList().IndexOf(pokemon) + 1})\n{pokemon.ToString()}\n");
-        foreach (var pokemon in pokemons)
+
+        while (true)
         {
-            char input = GetInput("Choose pokemon to remove or enter \"q\" to exit:");
+            if (removed == pokemons.Count()) break;
+
+            char input = GetInput("\nChoose pokemon to remove or enter \"q\" to exit:");
             if (char.ToLower(input).Equals('q')) break;
 
             int index = (int)input - (48 + 1);
+
+            if (index < 0 || index >= pokemons.Count())
+            {
+                Console.WriteLine("That is not a valid pokemons\nPlease choose again, or enter \"q\" to exit");
+                continue;
+            }
+
             Pokemon toRemove = pokemons.ElementAt(index);
             _Service.RemovePokemon(toRemove);
             removed++;
 
-            Console.WriteLine($"{pokemon.Name} removed successfully!\n");
+            Console.WriteLine($"{toRemove.Name} removed successfully!");
         }
 
-        Console.WriteLine($"{removed} pokemons removed");
+        Console.WriteLine($"\n{removed} pokemon(s) removed");
         GetListPokemons();
     }
 
@@ -323,7 +340,7 @@ public class MenuService
 
             if (pokemons.Count() == 0)
             {
-                Console.WriteLine("No pokemons to nurse, all at max health!");
+                Console.WriteLine("No pokemons to nurse :Dc");
                 return;
             }
 
@@ -420,7 +437,7 @@ public class MenuService
             Console.WriteLine("***********************");
             Console.WriteLine("(1) List pokemons in my pocket");
             Console.WriteLine("(2) Nurse selected pokemon(s)");
-            Console.WriteLine("(3) Exit market");
+            Console.WriteLine("(3) Exit hospital");
 
             dynamic input = (char)GetInput("Please only enter [1,2,3] or Q to quit:")!;
 
@@ -461,6 +478,13 @@ public class MenuService
 
         GetToTrain:
             List<Pokemon> pokemons = _Service.GetPokemons();
+
+            if (pokemons.Count() == 0)
+            {
+                Console.WriteLine("No pokemons to train :cc");
+                return;
+            }
+
             foreach (var pokemon in pokemons) Console.WriteLine($"({pokemons.IndexOf(pokemon) + 1})\n{pokemon.ToString()}\n");
 
             dynamic toTrain = (char)GetInput($"Choose pokemon(s) to Train:");
@@ -533,12 +557,12 @@ public class MenuService
         while (true)
         {
             Console.WriteLine();
-            Console.WriteLine("***********************");
-            Console.WriteLine("Welcome to the Hospital");
-            Console.WriteLine("***********************");
+            Console.WriteLine("******************");
+            Console.WriteLine("Welcome to the Gym");
+            Console.WriteLine("******************");
             Console.WriteLine("(1) List pokemons in my pocket");
             Console.WriteLine("(2) Train selected pokemon(s)");
-            Console.WriteLine("(3) Exit market");
+            Console.WriteLine("(3) Exit gym");
 
             dynamic input = (char)GetInput("Please only enter [1,2,3] or Q to quit:")!;
 
