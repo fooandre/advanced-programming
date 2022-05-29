@@ -163,13 +163,19 @@ public class MenuService
 
         if (!int.TryParse(hp, out int intHp))
         {
-            Console.WriteLine("Hp must be a valid number.\nTry again, or enter 0 to cancel.\n");
+            Console.WriteLine("Hp must be a valid number.\nTry again, or enter \"cancel\" to cancel.\n");
+            goto GetHp;
+        }
+
+        if (intHp <= 0)
+        {
+            Console.WriteLine($"Hp must be higher than 0.\nTry again, or enter \"cancel\" to cancel.\n");
             goto GetHp;
         }
 
         if (intHp > toAdd.MaxHp)
         {
-            Console.WriteLine($"Hp cannot be higher than {toAdd.MaxHp}.\nTry again, or enter 0 to cancel.\n");
+            Console.WriteLine($"Hp cannot be higher than {toAdd.MaxHp}.\nTry again, or enter \"cancel\" to cancel.\n");
             goto GetHp;
         }
 
