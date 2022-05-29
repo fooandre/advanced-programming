@@ -4,7 +4,7 @@
 
 namespace PokemonPocket.Migrations
 {
-    public partial class DB : Migration
+    public partial class PokemonDB : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -16,6 +16,7 @@ namespace PokemonPocket.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Hp = table.Column<double>(type: "REAL", nullable: false),
+                    MaxHp = table.Column<int>(type: "INTEGER", nullable: false),
                     Exp = table.Column<double>(type: "REAL", nullable: false),
                     Skill = table.Column<string>(type: "TEXT", nullable: false)
                 },

@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PokemonPocket.Migrations
 {
     [DbContext(typeof(PokemonContext))]
-    [Migration("20220528162918_DB")]
-    partial class DB
+    [Migration("20220529030720_PokemonDB")]
+    partial class PokemonDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -28,6 +28,9 @@ namespace PokemonPocket.Migrations
 
                     b.Property<double>("Hp")
                         .HasColumnType("REAL");
+
+                    b.Property<int>("MaxHp")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()

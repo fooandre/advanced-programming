@@ -27,6 +27,9 @@ namespace PokemonPocket.Migrations
                     b.Property<double>("Hp")
                         .HasColumnType("REAL");
 
+                    b.Property<int>("MaxHp")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");

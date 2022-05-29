@@ -76,7 +76,7 @@ public class PokemonService
                     case "hp":
                         toEdit.Hp = newValue;
                         break;
-                    case "Exp":
+                    case "exp":
                         toEdit.Exp = newValue;
                         break;
                     default:

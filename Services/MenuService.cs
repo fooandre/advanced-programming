@@ -61,6 +61,28 @@ public class MenuService
         else Console.WriteLine("That is not one of the options, please try again or enter Q to quit.");
     }
 
+    private void GetListPokemons()
+    {
+        while (true)
+        {
+            char showList = GetInput("Display updated pokemons in pocket?")!;
+
+            switch (char.ToLower(showList))
+            {
+                case 'y':
+                    Console.WriteLine();
+                    ListPokemons();
+                    return;
+                case 'n':
+                    Console.WriteLine();
+                    return;
+                default:
+                    Console.WriteLine("Please only enter \"y\" or \"n\".\n");
+                    break;
+            }
+        }
+    }
+
     private void ListPokemons()
     {
         List<Pokemon> pokemons = _Service.GetPokemons();
@@ -113,7 +135,8 @@ public class MenuService
             goto GetName;
         }
 
-        name = (name.Substring(0, 1).ToUpper() + name.Substring(1).ToLower()).Trim();
+        name = name.Trim();
+        name = (name.Substring(0, 1).ToUpper() + name.Substring(1).ToLower());
         if (name.Equals("Cancel")) return;
 
         Type? pokemonClass = Type.GetType(name);
@@ -141,6 +164,12 @@ public class MenuService
         if (!int.TryParse(hp, out int intHp))
         {
             Console.WriteLine("Hp must be a valid number.\nTry again, or enter 0 to cancel.\n");
+            goto GetHp;
+        }
+
+        if (intHp > toAdd.MaxHp)
+        {
+            Console.WriteLine($"Hp cannot be higher than {toAdd.MaxHp}.\nTry again, or enter 0 to cancel.\n");
             goto GetHp;
         }
 
@@ -173,21 +202,7 @@ public class MenuService
             goto GetName;
         }
 
-    Display:
-        char showList = GetInput("Display updated pokemons in pocket?")!;
-
-        switch (char.ToLower(showList))
-        {
-            case 'y':
-                Console.WriteLine();
-                ListPokemons();
-                break;
-            case 'n':
-                break;
-            default:
-                Console.WriteLine("Please only enter \"y\" or \"n\".");
-                goto Display;
-        }
+        GetListPokemons();
     }
 
     private void RemovePokemon()
@@ -209,27 +224,8 @@ public class MenuService
             Console.WriteLine($"{pokemon.Name} removed successfully!\n");
         }
 
-    Display:
-        if (_Service.GetPokemons().Count() == 0)
-        {
-            Console.WriteLine("No pokemons in pocket to remove");
-            return;
-        }
-
-        char showList = GetInput($"{removed} pokemons removed\nDisplay updated pokemons in pocket?")!;
-
-        switch (char.ToLower(showList))
-        {
-            case 'y':
-                Console.WriteLine();
-                ListPokemons();
-                break;
-            case 'n':
-                break;
-            default:
-                Console.WriteLine("Please only enter \"y\" or \"n\".");
-                goto Display;
-        }
+        Console.WriteLine($"{removed} pokemons removed");
+        GetListPokemons();
     }
 
     private void CheckToEvolve()
@@ -311,24 +307,9 @@ public class MenuService
 
         }
 
-    Display:
-        char showList = GetInput("Display updated pokemons in pocket?")!;
-
-        switch (char.ToLower(showList))
-        {
-            case 'y':
-                Console.WriteLine();
-                ListPokemons();
-                break;
-            case 'n':
-                break;
-            default:
-                Console.WriteLine("Please only enter \"y\" or \"n\".");
-                goto Display;
-        }
+        GetListPokemons();
     }
 
-    // TODO: Hospital()
     private void Hospital()
     {
         Console.Clear();
@@ -338,10 +319,17 @@ public class MenuService
             List<Pokemon> toNurseList = new();
 
         GetToNurse:
-            List<Pokemon> pokemons = _Service.GetPokemons();
+            List<Pokemon> pokemons = _Service.GetPokemons().Where(p => p.Hp < p.MaxHp).ToList();
+
+            if (pokemons.Count() == 0)
+            {
+                Console.WriteLine("No pokemons to nurse, all at max health!");
+                return;
+            }
+
             foreach (var pokemon in pokemons) Console.WriteLine($"({pokemons.IndexOf(pokemon) + 1})\n{pokemon.ToString()}\n");
 
-            dynamic toNurse = (char)GetInput($"Choose pokemon to trade with:");
+            dynamic toNurse = (char)GetInput($"Choose pokemon(s) to nurse:");
             if (char.ToLower(toNurse).Equals('q')) return;
             toNurse = (int)toNurse - (48 + 1);
 
@@ -352,6 +340,13 @@ public class MenuService
             }
 
             toNurse = pokemons.ElementAt((int)toNurse);
+            if (toNurse.Hp == toNurse.MaxHp)
+            {
+                Console.WriteLine($"{toNurse.Name} is already at max hp, please select another or enter Q to quit.\n");
+                goto GetToNurse;
+            }
+
+            toNurseList.Add(toNurse);
             Console.WriteLine($"{toNurse.Name} selected\n");
 
             if (toNurseList.Count() == pokemons.Count())
@@ -361,7 +356,9 @@ public class MenuService
             }
 
         GetContinueChoosing:
-            char continueChoosing = GetInput("\nContinue trading?")!;
+            if (toNurseList.Count() == pokemons.Count()) goto NursePokemons;
+
+            char continueChoosing = GetInput("\nChoose more pokemons?")!;
 
             switch (char.ToLower(continueChoosing))
             {
@@ -378,10 +375,41 @@ public class MenuService
 
         NursePokemons:
             Random random = new();
-            while (true) foreach (var pokemon in toNurseList)
+
+            foreach (var pokemon in toNurseList)
+            {
+                if (_Service.EditPokemon(pokemon.Id, "Hp", pokemon.MaxHp))
                 {
-                    Console.WriteLine(pokemon.Name);
+                    Console.WriteLine($"{pokemon.Name} healed to {pokemon.MaxHp:0.00}");
+                    pokemons.Remove(pokemon);
                 }
+                else Console.WriteLine($"{pokemon.Name} could not be nursed properly, please try again.");
+            }
+
+            toNurseList.Clear();
+
+        GetContinueNursing:
+            if (pokemons.Count() == 0)
+            {
+                Console.WriteLine("All pokemons at max health!");
+                GetListPokemons();
+            }
+
+            char continueNursing = GetInput("\nContinue nursing?")!;
+
+            switch (char.ToLower(continueNursing))
+            {
+                case 'y':
+                    Console.WriteLine();
+                    goto GetToNurse;
+                case 'n':
+                    Console.WriteLine();
+                    GetListPokemons();
+                    break;
+                default:
+                    Console.WriteLine("Please only enter \"y\" or \"n\".\n");
+                    goto GetContinueNursing;
+            }
         }
 
         while (true)
@@ -423,10 +451,122 @@ public class MenuService
         }
     }
 
-    // TODO: Gym()
     private void Gym()
     {
-        throw new NotImplementedException("OOI STUPID");
+        Console.Clear();
+
+        void TrainPokemons()
+        {
+            List<Pokemon> toTrainList = new();
+
+        GetToTrain:
+            List<Pokemon> pokemons = _Service.GetPokemons();
+            foreach (var pokemon in pokemons) Console.WriteLine($"({pokemons.IndexOf(pokemon) + 1})\n{pokemon.ToString()}\n");
+
+            dynamic toTrain = (char)GetInput($"Choose pokemon(s) to Train:");
+            if (char.ToLower(toTrain).Equals('q')) return;
+            toTrain = (int)toTrain - (48 + 1);
+
+            if (toTrain < 0 || toTrain >= pokemons.Count())
+            {
+                Console.WriteLine("That is not one of the options, please select again or enter Q to quit.\n");
+                goto GetToTrain;
+            }
+
+            toTrain = pokemons.ElementAt((int)toTrain);
+            toTrainList.Add(toTrain);
+            Console.WriteLine($"{toTrain.Name} selected\n");
+
+            if (toTrainList.Count() == pokemons.Count())
+            {
+                Console.WriteLine("All pokemons in pocket selected!");
+                goto TrainPokemons;
+            }
+
+        GetContinueChoosing:
+            char continueChoosing = GetInput("\nChoose more pokemons?")!;
+
+            switch (char.ToLower(continueChoosing))
+            {
+                case 'y':
+                    Console.WriteLine();
+                    goto GetToTrain;
+                case 'n':
+                    Console.WriteLine();
+                    break;
+                default:
+                    Console.WriteLine("Please only enter \"y\" or \"n\".\n");
+                    goto GetContinueChoosing;
+            }
+
+        TrainPokemons:
+            Random random = new();
+
+            foreach (var pokemon in toTrainList)
+            {
+                double newExp = pokemon.Exp + (random.Next(300) + random.NextDouble());
+
+                if (_Service.EditPokemon(pokemon.Id, "Exp", newExp)) Console.WriteLine($"{pokemon.Name} trained to {newExp:0.00}");
+                else Console.WriteLine($"{pokemon.Name} could not be trained properly, please try again.");
+            }
+
+            toTrainList.Clear();
+
+        GetContinueTraining:
+            char continueTraining = GetInput("\nContinue Training?")!;
+
+            switch (char.ToLower(continueTraining))
+            {
+                case 'y':
+                    Console.WriteLine();
+                    goto GetToTrain;
+                case 'n':
+                    Console.WriteLine();
+                    GetListPokemons();
+                    break;
+                default:
+                    Console.WriteLine("Please only enter \"y\" or \"n\".\n");
+                    goto GetContinueTraining;
+            }
+        }
+
+        while (true)
+        {
+            Console.WriteLine();
+            Console.WriteLine("***********************");
+            Console.WriteLine("Welcome to the Hospital");
+            Console.WriteLine("***********************");
+            Console.WriteLine("(1) List pokemons in my pocket");
+            Console.WriteLine("(2) Train selected pokemon(s)");
+            Console.WriteLine("(3) Exit market");
+
+            dynamic input = (char)GetInput("Please only enter [1,2,3] or Q to quit:")!;
+
+            if (char.ToLower(input).Equals('q'))
+            {
+                Console.Clear();
+                return;
+            }
+
+            input = (int)input - 48;
+            switch (input)
+            {
+                case 1:
+                    Console.WriteLine();
+                    ListPokemons();
+                    break;
+                case 2:
+                    Console.WriteLine();
+                    TrainPokemons();
+                    break;
+                case 3:
+                    Console.Clear();
+                    return;
+                default:
+                    Console.WriteLine("\nThat is not one of the options, please try again or enter Q to quit.");
+                    break;
+            }
+        }
     }
 
     enum Trade
@@ -456,8 +596,8 @@ public class MenuService
 
                 Type pokemonClass = Type.GetType(Enum.GetName(typeof(Trade), randomNum)!)!;
                 Pokemon newTrade = (Pokemon)Activator.CreateInstance(pokemonClass)!;
-                newTrade.Hp = random.Next(200);
-                newTrade.Exp = random.Next(200);
+                newTrade.Hp = random.Next(newTrade.MaxHp);
+                newTrade.Exp = random.Next(500);
 
                 trades.Add(newTrade);
 
@@ -532,22 +672,7 @@ public class MenuService
                     goto GetContinueTrading;
             }
 
-        Display:
-            char showList = GetInput("Display updated pokemons in pocket?")!;
-
-            switch (char.ToLower(showList))
-            {
-                case 'y':
-                    Console.WriteLine();
-                    ListPokemons();
-                    break;
-                case 'n':
-                    Console.WriteLine();
-                    break;
-                default:
-                    Console.WriteLine("Please only enter \"y\" or \"n\".\n");
-                    goto Display;
-            }
+            GetListPokemons();
         }
 
         RefreshTrades();
