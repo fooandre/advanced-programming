@@ -1,0 +1,52 @@
+Software Architect, Jan Lee, 98785432, Software Architect, IT Department
+Corporate Recruiter, Feb Tan, 98766432, Corporate Recruiter, HR Corporate Admin
+Benefit Specialist, Mark Lim, 98265432, Benefit Specialist, HR Corporate Admin
+Payroll Administrator, Apr Tan, 91765432, Payroll Administrator, HR Corporate Admin
+Training Coordinator, May Ng, 98767432, Training Coordinator, HR Corporate Admin
+Compensation Manager, Juno Chua, 98760432, Compensation Manager, HR Corporate Admin
+Technical Recruiter, Jul Wang, 98765932, Technical Recruiter, HR Corporate Admin
+HR Consultant, Aug Lau, 98765032, HR Consultant, HR Corporate Admin
+Software Engineer, Sep Yeo, 98765434, Software Engineer, IT Department
+Technical Lead, Octo Chua, 92765432, Technical Lead, IT Department
+Team Lead, Nova Ng, 90760432, Team Lead, IT Department
+Project Lead, Dessy Chow, 95760432, Project Lead, IT Department
+Project Manager, Jack Mar, 98766632, Project Manager, IT Department
+Procurement Assistant, Anne Chan, 90065432, Procurement Assistant, Procurement Department
+Procurement Officer, Claire Tan, 98760032, Procurement Officer, Procurement Department
+Purchasing Associate, Jade Lau, 91711432, Purchasing Associate, Procurement Department
+Purchasing Clerk, Wyne Yeo, 98733433, Purchasing Clerk, Procurement Department
+Facilities Manager, Craig Ng, 90088432, Facilities Manager, Procurement Department
+Operations Manager, Hugh Chan, 88765432, Operations Manager, Procurement Department
+Store Manager, Kent Teo, 80765432, Store Manager, Procurement Department
+Production Planner, Sam Goh, 98765321, Production Planner, Procurement Department
+Warehouse Clerk, Zack Aw, 98321432, Warehouse Clerk, Procurement Department
+Procurement Specialist, Ava Lim, 91235432, Procurement Specialist, Procurement Department
+Materials Director, Eva Chow, 92225432, Materials Director, Procurement Department
+Corporate Recruiter, Lea Law, 94445432, Corporate Recruiter, HR Corporate Admin
+HR Coordinator, Ian Neo, 90005432, HR Coordinator, HR Corporate Admin
+Software Architect, Jan Lee, 98785432, Software Architect, IT Department
+Corporate Recruiter, Feb Tan, 98766432, Corporate Recruiter, HR Corporate Admin
+Benefit Specialist, Mark Lim, 98265432, Benefit Specialist, HR Corporate Admin
+Payroll Administrator, Apr Tan, 91765432, Payroll Administrator, HR Corporate Admin
+Training Coordinator, May Ng, 98767432, Training Coordinator, HR Corporate Admin
+Compensation Manager, Juno Chua, 98760432, Compensation Manager, HR Corporate Admin
+Technical Recruiter, Jul Wang, 98765932, Technical Recruiter, HR Corporate Admin
+HR Consultant, Aug Lau, 98765032, HR Consultant, HR Corporate Admin
+Software Engineer, Sep Yeo, 98765434, Software Engineer, IT Department
+Technical Lead, Octo Chua, 92765432, Technical Lead, IT Department
+Team Lead, Nova Ng, 90760432, Team Lead, IT Department
+Project Lead, Dessy Chow, 95760432, Project Lead, IT Department
+Project Manager, Jack Mar, 98766632, Project Manager, IT Department
+Procurement Assistant, Anne Chan, 90065432, Procurement Assistant, Procurement Department
+Procurement Officer, Claire Tan, 98760032, Procurement Officer, Procurement Department
+Purchasing Associate, Jade Lau, 91711432, Purchasing Associate, Procurement Department
+Purchasing Clerk, Wyne Yeo, 98733433, Purchasing Clerk, Procurement Department
+Facilities Manager, Craig Ng, 90088432, Facilities Manager, Procurement Department
+Operations Manager, Hugh Chan, 88765432, Operations Manager, Procurement Department
+Store Manager, Kent Teo, 80765432, Store Manager, Procurement Department
+Production Planner, Sam Goh, 98765321, Production Planner, Procurement Department
+Warehouse Clerk, Zack Aw, 98321432, Warehouse Clerk, Procurement Department
+Procurement Specialist, Ava Lim, 91235432, Procurement Specialist, Procurement Department
+Materials Director, Eva Chow, 92225432, Materials Director, Procurement Department
+Corporate Recruiter, Lea Law, 94445432, Corporate Recruiter, HR Corporate Admin
+HR Coordinator, Ian Neo, 90005432, HR Coordinator, HR Corporate Admin

@@ -1,0 +1,88 @@
+{
+  "version": 3,
+  "targets": {
+    "net6.0": {
+      "Section A/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "compile": {
+          "bin/placeholder/Section A.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Section A.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Section A/1.0.0": {
+      "type": "project",
+      "path": "../Section A/Section A.csproj",
+      "msbuildProject": "../Section A/Section A.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net6.0": [
+      "Section A >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "/Users/idunwannabeu/.nuget/packages/": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "/Users/idunwannabeu/Desktop/Dev/Advanced Programming/Assignment/Section B/Section B.csproj",
+      "projectName": "Section B",
+      "projectPath": "/Users/idunwannabeu/Desktop/Dev/Advanced Programming/Assignment/Section B/Section B.csproj",
+      "packagesPath": "/Users/idunwannabeu/.nuget/packages/",
+      "outputPath": "/Users/idunwannabeu/Desktop/Dev/Advanced Programming/Assignment/Section B/obj/",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "/Users/idunwannabeu/.nuget/NuGet/NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net6.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "projectReferences": {
+            "/Users/idunwannabeu/Desktop/Dev/Advanced Programming/Assignment/Section A/Section A.csproj": {
+              "projectPath": "/Users/idunwannabeu/Desktop/Dev/Advanced Programming/Assignment/Section A/Section A.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net6.0": {
+        "targetAlias": "net6.0",
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/6.0.301/RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}
